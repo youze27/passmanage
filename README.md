@@ -1,16 +1,16 @@
-# passmanage
+# PassManager - 基于Flutter的密码管理器
 
-A new Flutter project.
 
-## Getting Started
+# 项目开发笔记
 
-This project is a starting point for a Flutter application.
+创建项目
 
-A few resources to get you started if this is your first Flutter project:
+```
+>flutter new
+Flutter: New Project
+Application
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+`pubspec.yaml` 文件指定与您的应用相关的基本信息，例如其当前版本、依赖项以及其随附的资源。
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+`analysis_options.yaml`此文件决定了 Flutter 在分析代码时的严格程度。
