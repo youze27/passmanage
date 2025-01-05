@@ -1,5 +1,6 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -56,40 +57,73 @@ class MyAppState extends ChangeNotifier {
 
 // ...
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  var selectedIndex = 0; //引入了一个新变量 selectedIndex，并将其初始化为 0。
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Row(
-        children: [
-          SafeArea(
-            child: NavigationRail(
-              extended: false,
-              destinations: [
-                NavigationRailDestination(
-                  icon: Icon(Icons.home),
-                  label: Text('Home'),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.favorite),
-                  label: Text('Favorites'),
-                ),
-              ],
-              selectedIndex: 0,
-              onDestinationSelected: (value) {
-                print('selected: $value');
-              },
+    Widget page; //声明了一个类型为 Widget 的新变量 page。
+    switch (selectedIndex) {
+      //根据 selectedIndex 中的当前值，switch 语句为 page 分配一个屏幕。
+      case 0:
+        page = GeneratorPage();
+        break;
+      case 1:
+        page = FavoritesPage();
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
+    }
+    //每当约束发生更改时，系统都会调用 LayoutBuilder 的 builder 回调。
+    return LayoutBuilder(builder: (context, constraints) {
+      return Scaffold(
+        body: Row(
+          children: [
+            //MyHomePage 包含一个有两个子项的 Row。
+            //第一个是 SafeArea widget，第二个是 Expanded widget。
+            SafeArea(
+              child: NavigationRail(
+                extended: constraints.maxWidth >= 600,
+                // false, //将 NavigationRail 中的 extended: false 行更改为 true。这将显示图标旁边的标签。
+                destinations: [
+                  //侧边导航栏有两个目标页面（Home 和 Favorites），两者都有各自的图标和标签。
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home),
+                    label: Text('Home'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.favorite),
+                    label: Text('Favorites'),
+                  ),
+                ],
+                //侧边导航栏还定义了当前的 selectedIndex。若选定索引 (selectedIndex) 为零，则会选择第一个目标页面；
+                //若选定索引为一，则会选择第二个目标页面，依此类推。目前，它被硬编码为零。
+                selectedIndex: selectedIndex,
+                //侧边导航栏还定义了当用户选择其中一个具有 onDestinationSelected 的目标页面时会发生什么。
+                onDestinationSelected: (value) {
+                  //当调用 onDestinationSelected 回调时将其分配到 setState() 调用内部的 selectedIndex。
+                  setState(() {
+                    selectedIndex = value;
+                  });
+                },
+              ),
             ),
-          ),
-          Expanded(
-            child: Container(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: GeneratorPage(),
+            Expanded(
+              //两个 Expanded widget 会分割两者之间所有可用的水平空间，即使侧边导航栏只需要左侧的一小部分。
+              //在 Expanded widget 内部，有一个指定了颜色的 Container；而在该容器内部，有一个 GeneratorPage。
+              child: Container(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: page,
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -137,6 +171,41 @@ class GeneratorPage extends StatelessWidget {
   }
 }
 
+
+// ...
+
+class FavoritesPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
+    //如果收藏夹列表为空，则居中显示消息：No favorites yet*.*
+    if (appState.favorites.isEmpty) {
+      return Center(
+        child: Text('No favorites yet.'),
+      );
+    }
+
+    //否则显示一个（可滚动的）列表。
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          //列表最开始显示一条概要消息（例如，You have 5 favorites*.*）。
+          child: Text('You have '
+              '${appState.favorites.length} favorites:'),
+        ),
+
+        //然后，代码遍历所有收藏夹，并为每个收藏夹构造一个 ListTile widget。
+        for (var pair in appState.favorites)
+          ListTile(
+            leading: Icon(Icons.favorite),
+            title: Text(pair.asLowerCase),
+          ),
+      ],
+    );
+  }
+}
 // ...
 
 class BigCard extends StatelessWidget {
